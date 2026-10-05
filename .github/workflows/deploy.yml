@@ -1,19 +1,14 @@
-name: Deploy static export to S3 + CloudFront
+name: Deploy static site to S3 + CloudFront
 
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      channel:
-        description: 'Channel token that triggered this deploy'
-        required: false
-        type: string
-      envOverrides:
-        description: 'JSON string of env var overrides for this deploy'
-        required: false
-        type: string
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -23,30 +18,23 @@ jobs:
       AWS_REGION: ${{ vars.AWS_REGION }}
       AWS_BUCKET: ${{ vars.AWS_BUCKET }}
       CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
-      # NEXT_PUBLIC_* build-time vars (Vendure API URL/channel token, site
-      # URL/name, Stripe publishable key) are NOT injected here — they come
-      # from the committed .env.production (tracked in git, loaded
-      # automatically by `next build`). See docs/decisions.md.
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build static export
-        run: npm run build
-        # next.config.ts must have output: 'export' for this to emit an out/
-        # directory (see docs/decisions.md, static-export migration entry) —
-        # `next build` fails fast if that isn't set, so a misconfigured
-        # branch never reaches the sync/invalidate steps below.
+      # Plain HTML/CSS/JS site — no build step. Copy only the publishable
+      # files into a staging dir so repo metadata never reaches the bucket.
+      - name: Prepare site files
+        run: |
+          mkdir -p site
+          rsync -a ./ site/ \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'site' \
+            --exclude 'README.md' \
+            --exclude '.gitkeep' \
+            --exclude '.gitignore'
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -55,12 +43,22 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: Sync static export to S3
+      # Static assets (images, css, js) — cache for a day at the edge/browser.
+      - name: Sync assets to S3
         run: |
-          aws s3 sync out "s3://${AWS_BUCKET}" --delete
+          aws s3 sync site "s3://${AWS_BUCKET}" --delete \
+            --exclude "*.html" --exclude "*.json" \
+            --cache-control "public, max-age=86400"
 
-      # - name: Invalidate CloudFront cache
-      #   run: |
-      #     aws cloudfront create-invalidation \
-      #       --distribution-id "${CLOUDFRONT_DISTRIBUTION_ID}" \
-      #       --paths "/*"
+      # HTML and products.json — always revalidate so content changes show up immediately.
+      - name: Sync HTML and data to S3
+        run: |
+          aws s3 sync site "s3://${AWS_BUCKET}" --delete \
+            --exclude "*" --include "*.html" --include "*.json" \
+            --cache-control "no-cache"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${CLOUDFRONT_DISTRIBUTION_ID}" \
+            --paths "/*"
