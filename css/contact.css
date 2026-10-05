@@ -90,8 +90,10 @@
 .contact-submit:hover { box-shadow: 0 10px 22px rgba(237, 28, 36, .32); }
 .contact-submit i { transition: transform .3s ease; }
 .contact-submit:hover i { transform: translateX(3px); }
+.contact-submit[disabled] { opacity: .8; cursor: progress; transform: none; box-shadow: none; }
+.contact-submit[disabled] i { transform: none; }
 .form-note { margin-top: 12px; font-size: 13px; color: var(--muted); }
-.form-note i { color: var(--wa-dark); margin-right: 4px; }
+.form-note i { color: var(--navy); margin-right: 4px; }
 
 .form-alert {
   display: flex; gap: 12px; align-items: flex-start; margin-top: 20px;
@@ -103,7 +105,7 @@
 .form-alert--success { background: #EAF7EF; color: #0E5F33; border: 1px solid #BFE5CD; }
 .form-alert--success strong { display: block; font-size: 15.5px; }
 .form-alert--success p { margin-top: 4px; color: #24543A; }
-.form-alert__links a { font-weight: 600; text-decoration: underline; color: #0E5F33; }
+.form-alert--error a { font-weight: 600; text-decoration: underline; color: inherit; }
 
 /* ---------- Talk to us ---------- */
 .contact-info { position: sticky; top: calc(var(--header-h) + 20px); }

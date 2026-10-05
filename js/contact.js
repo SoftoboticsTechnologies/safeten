@@ -1,23 +1,27 @@
 /* ==========================================================================
    Contact page: enquiry form
-   The site has no backend, so a valid enquiry is handed to WhatsApp
-   (with an email fallback) as a pre-filled message.
+   Valid enquiries are POSTed as JSON to the contact-form API, which emails
+   the SAFETEN team (replies go to the visitor's "email"). The API only
+   accepts registered domains, so submissions fail from localhost.
    ========================================================================== */
 
-const CONTACT_EMAIL = "safeten.service@gmail.com";
+const CONTACT_API_ENDPOINT = "https://k5iewetbri.execute-api.ap-south-1.amazonaws.com/prod/contact";
+const CONTACT_API_TIMEOUT_MS = 20000;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const IS_DEV_HOST = ["localhost", "127.0.0.1", ""].includes(location.hostname);
 
-/* Accepts Indian and international numbers: 10–13 digits, optional +, spaces, dashes, brackets. */
+/* Accepts Indian and international numbers: 7–15 digits (E.164 maximum),
+   optional +, spaces, dashes, dots, brackets. */
 function isValidPhone(value) {
-  if (!/^\+?[\d\s\-()]+$/.test(value)) return false;
+  if (!/^\+?[\d\s\-().]+$/.test(value)) return false;
   const digits = value.replace(/\D/g, "");
-  return digits.length >= 10 && digits.length <= 13;
+  return digits.length >= 7 && digits.length <= 15;
 }
 
 const CONTACT_RULES = {
   firstName: (v) => (v ? "" : "Please enter your first name."),
   email: (v) => (!v ? "Please enter your email address." : EMAIL_PATTERN.test(v) ? "" : "Please enter a valid email address (e.g. name@example.com)."),
-  phone: (v) => (!v ? "Please enter your phone number." : isValidPhone(v) ? "" : "Please enter a valid phone number (10–13 digits)."),
+  phone: (v) => (!v ? "Please enter your phone number." : isValidPhone(v) ? "" : "Please enter a valid phone number."),
   message: (v) => (v.length >= 5 ? "" : v ? "Please add a little more detail about your requirement." : "Please tell us about your requirement.")
 };
 
@@ -37,6 +41,28 @@ function validateField(input) {
   return !message;
 }
 
+/* Form field names -> API JSON properties. "email" must stay "email" so
+   replies to the notification go to the visitor. Empty optional fields are
+   left out. */
+const API_FIELD_MAP = {
+  firstName: "firstName",
+  lastName: "lastName",
+  email: "email",
+  phone: "phoneNumber",
+  company: "companyName",
+  service: "serviceRequired",
+  message: "message"
+};
+
+function buildApiPayload(data) {
+  const payload = {};
+  Object.entries(API_FIELD_MAP).forEach(([field, key]) => {
+    if (data[field]) payload[key] = data[field];
+  });
+  return payload;
+}
+
+/* Pre-filled WhatsApp text, offered as a fallback when the API fails. */
 function buildEnquiryMessage(data) {
   const name = [data.firstName, data.lastName].filter(Boolean).join(" ");
   const lines = [
@@ -52,12 +78,56 @@ function buildEnquiryMessage(data) {
   return lines.join("\n");
 }
 
+/**
+ * POST the enquiry. Resolves only when the API confirms success
+ * ({ success: true }); otherwise throws. Error details are for the console,
+ * never shown to visitors.
+ */
+async function sendEnquiry(payload) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), CONTACT_API_TIMEOUT_MS);
+  try {
+    const response = await fetch(CONTACT_API_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    let result = null;
+    try { result = await response.json(); } catch { /* non-JSON body */ }
+    if (!response.ok || !result || result.success !== true) {
+      const error = new Error("Contact API rejected the enquiry");
+      error.status = response.status;
+      error.apiErrors = result && Array.isArray(result.errors) ? result.errors : ["Malformed or empty response"];
+      throw error;
+    }
+    return result;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function initContactForm() {
   const form = document.getElementById("contact-form");
   if (!form) return;
   const errorAlert = document.getElementById("form-error");
+  const errorText = document.getElementById("form-error-text");
   const successAlert = document.getElementById("form-success");
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const submitLabel = submitBtn.innerHTML;
   const inputs = [...form.querySelectorAll("input, select, textarea")];
+  let sending = false;
+
+  const showError = (html) => {
+    errorText.innerHTML = html;
+    errorAlert.hidden = false;
+  };
+  const setSending = (on) => {
+    sending = on;
+    submitBtn.disabled = on;
+    submitBtn.setAttribute("aria-busy", on ? "true" : "false");
+    submitBtn.innerHTML = on ? 'Sending... <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>' : submitLabel;
+  };
 
   // Validate on blur, then live once a field has been flagged.
   inputs.forEach((input) => {
@@ -68,13 +138,14 @@ function initContactForm() {
     });
   });
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (sending) return;
     successAlert.hidden = true;
 
     const invalid = inputs.filter((input) => !validateField(input));
     if (invalid.length) {
-      errorAlert.hidden = false;
+      showError("Please correct the highlighted fields and try again.");
       invalid[0].focus();
       return;
     }
@@ -83,20 +154,30 @@ function initContactForm() {
     const data = Object.fromEntries(
       [...new FormData(form).entries()].map(([key, value]) => [key, String(value).trim()])
     );
-    const message = buildEnquiryMessage(data);
-    const waLink = createWhatsAppLink(message);
-    const subject = `Website enquiry${data.service ? ` – ${data.service}` : ""}`;
-    const mailLink = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
 
-    document.getElementById("success-wa").href = waLink;
-    document.getElementById("success-mail").href = mailLink;
-
-    window.open(waLink, "_blank", "noopener");
-
-    form.reset();
-    inputs.forEach((input) => setFieldError(input, ""));
-    successAlert.hidden = false;
-    successAlert.focus();
+    setSending(true);
+    try {
+      await sendEnquiry(buildApiPayload(data));
+      form.reset();
+      inputs.forEach((input) => setFieldError(input, ""));
+      successAlert.hidden = false;
+      successAlert.focus();
+    } catch (error) {
+      if (IS_DEV_HOST) {
+        console.warn("[Safeten] Contact form submission failed:",
+          error.name === "AbortError" ? "request timed out" : (error.apiErrors || error.message), error.status || "");
+      }
+      const waLink = createWhatsAppLink(buildEnquiryMessage(data));
+      showError(
+        "Sorry, we couldn't send your enquiry right now. Please try again or contact us directly on " +
+        `<a href="${waLink}" target="_blank" rel="noopener">WhatsApp</a> or ` +
+        `<a href="tel:${CONTACT.phoneLink}">${CONTACT.phoneDisplay}</a>.`
+      );
+    } finally {
+      setSending(false);
+      // Disabling the button drops keyboard focus; hand it back after an error.
+      if (document.activeElement === document.body) submitBtn.focus();
+    }
   });
 }
 

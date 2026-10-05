@@ -161,6 +161,19 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .nav-list a:hover, .nav-list a.is-active { color: var(--red); }
 .nav-list a:hover::after, .nav-list a.is-active::after { transform: scaleX(1); }
 
+/* Right-hand header actions (desktop/tablet; the top bar carries them on mobile) */
+.header-actions { justify-self: end; display: flex; align-items: center; gap: 8px; }
+.header-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 40px; padding: 9px 16px; border-radius: 5px;
+  background: #071B33; color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap;
+  transition: background-color .2s, transform .2s, box-shadow .2s;
+}
+.header-btn i { font-size: 13px; color: #fff; }
+.header-btn .fa-whatsapp { font-size: 16px; }
+.header-btn:hover { background: #163A5F; transform: translateY(-1px); box-shadow: 0 6px 14px rgba(7, 27, 51, .25); }
+.header-btn:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
 .nav-toggle {
   display: none; justify-self: end; place-items: center;
   width: 42px; height: 42px; border: 0; border-radius: 50%; background: transparent;
@@ -322,32 +335,23 @@ a.info-card:hover .icon-circle { background: var(--red); border-color: var(--red
 .notice code { background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); font-size: 13px; }
 
 /* ---------- Certifications ----------
-   Image-led cards: the official document sits in a fixed-height white frame
-   with object-fit: contain, so portrait and landscape scans keep their full
-   proportions. Until a document file exists the text badge is shown. */
+   Image-led cards: each certification image sits in a fixed-height white
+   frame with object-fit: contain, so portrait and landscape files keep
+   their full proportions and are never cropped. */
 .cert-band { background: var(--grey-bg); padding: 34px 28px; border-radius: var(--radius); }
-.cert-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; }
+.cert-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px; }
 .cert-card {
-  flex: 0 0 calc((100% - 72px) / 5); display: flex; flex-direction: column; text-align: center;
-  background: #fff; border: 1px solid #D9E1EA; border-radius: 10px; box-shadow: var(--shadow); overflow: hidden;
-  transition: transform .25s var(--ease), box-shadow .25s, border-color .25s;
+  display: flex; flex-direction: column; text-align: center;
+  background: #fff; border: 1px solid #D9E1EA; border-radius: 14px; box-shadow: 0 8px 24px rgba(7, 27, 51, .08); overflow: hidden;
+  transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
 }
-.cert-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); border-color: rgba(237, 28, 36, .55); }
-.cert-media {
-  height: 180px; padding: 15px; display: flex; align-items: center; justify-content: center;
-  background: #fff; border-bottom: 1px solid #EEF1F4;
-}
-.cert-media img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; transition: transform .3s var(--ease); }
+.cert-card:hover { transform: translateY(-4px); box-shadow: 0 14px 32px rgba(7, 27, 51, .13); border-color: rgba(237, 28, 36, .45); }
+.cert-media { flex: 0 0 auto; height: 180px; padding: 20px; display: flex; align-items: center; justify-content: center; background: #fff; }
+.cert-media img { display: block; width: 100%; height: 100%; object-fit: contain; transition: transform .3s ease; }
 .cert-card:hover .cert-media img { transform: scale(1.02); }
 .cert-media.is-zoomable { cursor: zoom-in; }
 .cert-media.is-zoomable:focus-visible { outline: 2px solid var(--red); outline-offset: -4px; }
-.cert-fallback {
-  display: none; place-items: center; width: 84px; height: 84px; border-radius: 50%;
-  border: 2px solid var(--navy); color: var(--navy); font-weight: 800; font-size: 14px; line-height: 1.1;
-}
-.cert-media.no-img img { display: none; }
-.cert-media.no-img .cert-fallback { display: grid; }
-.cert-card__body { flex: 1; min-height: 88px; padding: 14px 12px 16px; }
+.cert-card__body { flex: 1; min-height: 88px; padding: 14px 12px 18px; border-top: 1px solid #EEF1F4; }
 .cert-card__title { font-size: 13.5px; font-weight: 700; text-transform: uppercase; }
 .cert-card__text { margin-top: 4px; font-size: 12px; color: var(--muted); line-height: 1.45; }
 

@@ -14,6 +14,7 @@
   .hero-arrow--prev { left: 14px; }
   .hero-arrow--next { right: 14px; }
   .nav-list { gap: 24px; }
+  .header-btn { padding: 8px 12px; letter-spacing: .05em; gap: 7px; }
 
   .home-cta { padding: 48px 0 40px; }
   .home-cta__title { font-size: 27px; }
@@ -23,7 +24,10 @@
 
   .solutions-grid { grid-template-columns: repeat(3, 1fr); }
   .product-grid { grid-template-columns: repeat(2, 1fr); }
-  .cert-card { flex-basis: calc((100% - 36px) / 3); }
+  /* 3 + 2, with the second row centred */
+  .cert-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .cert-card { grid-column: span 2; }
+  .cert-card:nth-child(4) { grid-column: 2 / span 2; }
   .process-grid .info-card { width: calc((100% - 40px) / 3); }
   .why-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); }
   .footer__grid { grid-template-columns: 1fr 1fr; gap: 40px 48px; }
@@ -40,9 +44,16 @@
   .topbar__tagline { display: none; }
 }
 
+/* Narrow tablet: header actions shorten to "Call" / "WhatsApp" */
+@media (max-width: 1099px) {
+  .header-btn__more { display: none; }
+}
+
 /* Collapse primary navigation into a slide-down menu */
 @media (max-width: 900px) {
   .nav-toggle { display: inline-grid; }
+  /* Hamburger header: phone and WhatsApp stay in the top bar and floating button */
+  .header-actions { display: none; }
   .header__inner { grid-template-columns: 1fr auto; }
   .main-nav {
     position: absolute; left: 0; right: 0; top: 100%;
@@ -117,8 +128,9 @@
   .badge { top: 8px; left: 8px; font-size: 10px; }
 
   .cert-band { padding: 18px 15px; }
-  .cert-grid { gap: 14px; }
-  .cert-card { flex-basis: 100%; max-width: 380px; }
+  .cert-grid { grid-template-columns: 1fr; gap: 14px; }
+  .cert-card, .cert-card:nth-child(4) { grid-column: auto; }
+  .cert-media { height: 170px; }
 
   .process-grid { gap: 12px; }
   .process-grid .info-card { width: calc((100% - 12px) / 2); }

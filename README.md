@@ -27,10 +27,7 @@ filters and price ranges are rebuilt from the file.
 - Product images load from the URLs in `products.json` (currently safeten.co.in).
   If the WordPress site goes offline, download them into `assets/images/products/`
   and update the `Images` column.
-- Certifications: add scans/photos of SAFETEN's official documents to `assets/certifications/`
-  as `msme-certificate.jpg`, `iso-9001-certificate.jpg`, `govt-india-certificate.jpg`,
-  `iso-45001-certificate.jpg` and `gem-certificate.jpg`. Each card shows its document (never
-  cropped) and opens it larger on click; until a file exists that card shows a text badge.
-  Use the real certificates, not generic ISO/MSME/GeM logos or the State Emblem.
+- Certifications: the homepage cards use `msme.jpeg`, `iso-9001.jpeg`, `govt-of-india.jpeg`,
+  `iso-45001.jpeg` and `gem.jpeg` in `assets/certifications/` (shown uncropped; click to enlarge).
 - Client logos (`assets/clients/`) and hero banners (`assets/banners/`) were taken from the
   reference screenshots; replace them with original high-resolution files when available.
