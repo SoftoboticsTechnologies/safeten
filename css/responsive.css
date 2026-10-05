@@ -1,0 +1,177 @@
+/* ==========================================================================
+   Responsive layer
+   Desktop  >= 1200px  (base styles)
+   Tablet   768px – 1199px
+   Mobile   <= 767px
+   ========================================================================== */
+
+/* ---------- Tablet ---------- */
+@media (max-width: 1199px) {
+  :root { --section-y: 56px; }
+
+  .hero__viewport { height: clamp(450px, 44vw, 520px); }
+  .hero-arrow { width: 42px; height: 42px; }
+  .hero-arrow--prev { left: 14px; }
+  .hero-arrow--next { right: 14px; }
+  .nav-list { gap: 24px; }
+
+  .home-cta { padding: 48px 0 40px; }
+  .home-cta__title { font-size: 27px; }
+  .home-cta__icon { font-size: 72px; }
+  .home-cta__icon--left { left: 3%; }
+  .home-cta__icon--right { right: 3%; }
+
+  .solutions-grid { grid-template-columns: repeat(3, 1fr); }
+  .product-grid { grid-template-columns: repeat(2, 1fr); }
+  .cert-card { flex-basis: calc((100% - 36px) / 3); }
+  .process-grid .info-card { width: calc((100% - 40px) / 3); }
+  .why-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); }
+  .footer__grid { grid-template-columns: 1fr 1fr; gap: 40px 48px; }
+  /* Not enough room to keep the copyright centred: copyright left, branding right */
+  .footer__bottom-inner { display: flex; justify-content: space-between; text-align: left; }
+  .footer__powered-logo img { height: 20px; }
+  .client-logo { width: 260px; height: 150px; }
+  .pd { gap: 30px; }
+}
+
+/* Tablet: tagline gives way so contacts stay on one row */
+@media (max-width: 820px) {
+  .topbar__group { gap: 16px; }
+  .topbar__tagline { display: none; }
+}
+
+/* Collapse primary navigation into a slide-down menu */
+@media (max-width: 900px) {
+  .nav-toggle { display: inline-grid; }
+  .header__inner { grid-template-columns: 1fr auto; }
+  .main-nav {
+    position: absolute; left: 0; right: 0; top: 100%;
+    flex-direction: column; align-items: stretch; gap: 0;
+    background: #fff; border-bottom: 1px solid var(--border);
+    box-shadow: 0 12px 24px rgba(6, 38, 74, .1);
+    max-height: 0; overflow: hidden; visibility: hidden;
+    transition: max-height .35s var(--ease), visibility .35s;
+  }
+  .main-nav.is-open { max-height: 420px; visibility: visible; }
+  .nav-list { flex-direction: column; align-items: stretch; gap: 0; width: min(100% - 40px, var(--container)); margin: 0 auto; padding: 6px 0 14px; }
+  .nav-list li + li { border-top: 1px solid var(--grey-bg); }
+  .nav-list a { padding: 13px 2px; font-size: 14px; }
+  .nav-list a::after { display: none; }
+  .header__inner { position: static; }
+  .site-header { position: sticky; }
+  .site-header .container { position: static; }
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 767px) {
+  :root { --section-y: 44px; --header-h: 62px; }
+  body { font-size: 14.5px; }
+  .container { width: calc(100% - 30px); }
+
+  /* Two compact rows: both numbers, then email + WhatsApp */
+  .topbar__inner { display: grid; grid-template-columns: auto auto; justify-content: center; gap: 3px 18px; padding: 6px 0; }
+  .topbar__group:first-child { display: contents; }
+  .topbar__phones { grid-column: 1 / -1; justify-self: center; }
+
+  .site-logo { --logo-h: 44px; }
+  .header__inner { gap: 10px; }
+
+  .section-head { margin-bottom: 26px; }
+  .section-title { font-size: 21px; }
+  .section-subtitle { font-size: 15px; }
+  .section-text { font-size: 14.5px; }
+
+  .hero__viewport { height: clamp(350px, 92vw, 500px); }
+  .hero-arrow { width: 34px; height: 34px; font-size: 13px; }
+  .hero-arrow--prev { left: 8px; }
+  .hero-arrow--next { right: 8px; }
+  .hero-dots { bottom: 12px; gap: 6px; }
+  .hero-dot { width: 7px; height: 7px; }
+  .hero-dot.is-active { width: 18px; }
+
+  .home-cta { padding: 40px 0 32px; }
+  .home-cta__icon { display: none; }
+  .home-cta::before { width: 70px; }
+  .home-cta::after { width: 60px; }
+  .home-cta__title { font-size: 22px; }
+  .home-cta__text { margin-top: 12px; font-size: 15px; }
+  .home-cta__actions { flex-direction: column; align-items: stretch; gap: 12px; max-width: 340px; margin: 24px auto 0; }
+  .home-cta__btn { width: 100%; min-width: 0; }
+
+  .solutions-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .info-card { padding: 20px 12px 18px; }
+  .icon-circle { width: 46px; height: 46px; font-size: 18px; margin-bottom: 10px; }
+  .info-card__title { font-size: 13px; }
+  .info-card__text { font-size: 12.5px; }
+
+  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .product-card { border-width: 1.5px; }
+  .product-card__media img { padding: 10px; }
+  .product-card__body { padding: 10px 10px 14px; gap: 5px; }
+  .product-card__cat { font-size: 9.5px; letter-spacing: .08em; }
+  .product-card__title { font-size: 14px; }
+  .product-card__desc { font-size: 12px; -webkit-line-clamp: 2; }
+  .price__current { font-size: 14.5px; }
+  .price__old { font-size: 12px; }
+  .product-card .btn--wa { min-height: 36px; padding: 8px 8px; font-size: 10.5px; letter-spacing: .04em; gap: 5px; }
+  .badge { top: 8px; left: 8px; font-size: 10px; }
+
+  .cert-band { padding: 18px 15px; }
+  .cert-grid { gap: 14px; }
+  .cert-card { flex-basis: 100%; max-width: 380px; }
+
+  .process-grid { gap: 12px; }
+  .process-grid .info-card { width: calc((100% - 12px) / 2); }
+
+  .why-layout { grid-template-columns: 1fr; }
+  .why-main { position: static; padding: 24px 20px; }
+  .why-grid { gap: 10px; }
+  .why-card { padding: 16px 10px; }
+  .why-card__title { font-size: 12px; letter-spacing: .03em; }
+  .why-card__text { font-size: 11.5px; }
+
+  .client-logo { width: 200px; height: 112px; padding: 14px 16px; }
+  .client-track { gap: 12px; }
+
+  .cta { padding-top: 44px; }
+  .cta__title { font-size: 26px; }
+  .cta__text { font-size: 15px; }
+  .cta__actions .btn { flex: 1 1 200px; }
+  .cta-features__grid { grid-template-columns: repeat(2, 1fr); }
+  .cta-feature:nth-child(3) { border-left: 0; }
+  .cta-feature:nth-child(n+3) { border-top: 1px solid rgba(255, 255, 255, .1); }
+
+  .site-footer .container { width: 100%; padding-left: 30px; padding-right: 30px; }
+  .footer__grid { grid-template-columns: 1fr; gap: 34px; padding: 44px 0 36px; }
+  .footer__about { max-width: none; }
+  /* Room under the copyright so the floating WhatsApp button never covers it */
+  .footer__bottom { padding: 16px 0 84px; }
+  .footer__bottom-inner { flex-direction: column; justify-content: center; gap: 10px; text-align: center; }
+  .footer__powered { margin-right: 0; }
+
+  .wa-float { right: 16px; bottom: 16px; width: 52px; height: 52px; font-size: 28px; }
+
+  .page-hero { padding: 26px 0; }
+  .page-hero h1 { font-size: 24px; }
+  .page-hero::after, .page-hero::before { opacity: .35; }
+  .shop-toolbar { flex-direction: column; align-items: stretch; }
+  .shop-search { max-width: none; flex-basis: auto; }
+  .shop-meta { justify-content: space-between; }
+  .category-filter { flex-wrap: nowrap; overflow-x: auto; margin: 0 -15px 10px; padding: 0 15px 4px; scrollbar-width: none; }
+  .category-filter::-webkit-scrollbar { display: none; }
+  .chip { flex-shrink: 0; }
+
+  .pd { grid-template-columns: 1fr; gap: 24px; }
+  .pd-info h1 { font-size: 24px; }
+  .pd-info .price__current { font-size: 22px; }
+  .pd-meta div { grid-template-columns: 110px 1fr; }
+  .pd-buy .btn--wa { flex-basis: 100%; order: 3; }
+}
+
+/* Very narrow phones: single-column product cards */
+@media (max-width: 359px) {
+  .topbar { font-size: 11.5px; }
+  .topbar__inner { column-gap: 12px; }
+  .product-grid, .solutions-grid { grid-template-columns: 1fr; }
+  .process-grid .info-card { width: 100%; }
+}
